@@ -5,7 +5,7 @@
     <title>Socket.IO chat</title>
     <style>
         body {
-            margin: 0;
+            margin: 50px;
             padding-bottom: 3rem;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -62,11 +62,14 @@
 </head>
 
 <body>
+    <div id="userOnline">
+    </div>
+    <form style="display: flex;" id="formnick" action="">
+        <input id="inputnick" autocomplete="off" />
+        <button>Salvar nick</button>
+    </form>
     <ul id="messages"></ul>
 
-    <form id="formnick" action="">
-        <input id="inputnick" autocomplete="off" /><button>Salvar nick</button>
-    </form>
 
     <form id="form" action="">
         <input id="input" autocomplete="off" /><button>Send</button>
@@ -75,7 +78,16 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-
+        var div1 = document.getElementById('userOnline');
+        socket.on('users', function (users) {
+            console.log('oi: ', users)
+            for(let i=0;i < users.length;i++){
+                var p = document.createElement('p')
+                var text = document.createTextNode(users[i] + ' está online');
+                p.appendChild(text);
+                div1.appendChild(p);
+            }
+        });
         var form = document.getElementById('form');
         var input = document.getElementById('input');
 

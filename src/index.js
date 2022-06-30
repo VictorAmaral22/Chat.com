@@ -11,13 +11,16 @@ const {
 } = require("socket.io");
 const io = new Server(server);
 
+let users= []
 io.on('connection', (socket) => {
     console.log('a user connected');
     socket.client.nick = 'Unknown'+Math.floor(Math.random() * 100);
+    users.push(socket.client.nick);
+    io.emit('users', users);
     io.emit('chat message', socket.client.nick + ' entrou no sala de chat ');
-
     socket.on('disconnect', () => {
         console.log('user disconnected');
+        users = users.filter(i=>i !== socket.client.nick);
         io.emit('chat message', socket.client.nick + ' deixou sala de chat ');
     });
 

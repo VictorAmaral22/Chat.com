@@ -10,6 +10,7 @@ const {
     Server
 } = require("socket.io");
 const io = new Server(server);
+var usersTyping = [];
 
 let users= []
 io.on('connection', (socket) => {
@@ -21,12 +22,33 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('user disconnected');
         users = users.filter(i=>i !== socket.client.nick);
+        usersTyping = usersTyping.filter(item => item.id != socket.client.id);
         io.emit('chat message', socket.client.nick + ' deixou sala de chat ');
+    });
+
+    socket.on('user typing', () => {
+        if(!usersTyping.find(item => item.id == socket.client.id)){
+            console.log('socket.client.nick ',socket.client.nick)
+            usersTyping.push({ id: socket.client.id, nick: socket.client.nick});
+            console.log('usersTyping ',usersTyping)
+            // let typersExceptU = usersTyping.filter(item => item.id != socket.client.id)
+            io.emit('users typing list', usersTyping);
+        }
+    });
+
+    socket.on('user stopped typing', () => {
+        console.log(socket.client.id + ' parou de digitar');
+        usersTyping = usersTyping.filter(item => item.id != socket.client.id);
+        console.log('usersTyping ',usersTyping)
+        // let typersExceptU = usersTyping.filter(item => item.id != socket.client.id)
+        io.emit('users typing list', usersTyping);
     });
 
     socket.on('chat message', (msg) => {
         console.log(socket.client.id + ': ' + msg);
+        usersTyping = usersTyping.filter(item => item.id != socket.client.id);
         io.emit('chat message', socket.client.nick + ': ' + msg);
+        io.emit('users typing list', usersTyping);
     });
 
     socket.on('set nick', (msg) => {

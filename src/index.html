@@ -82,10 +82,10 @@
         var socket = io();
         var div1 = document.getElementById('userOnline');
         socket.on('users', function (users) {
-            console.log('oi: ', users)
+            div1.innerHTML = '';
             for(let i=0;i < users.length;i++){
                 var p = document.createElement('p')
-                var text = document.createTextNode(users[i] + ' está online');
+                var text = document.createTextNode(users[i].nick + ' está online');
                 p.appendChild(text);
                 div1.appendChild(p);
             }

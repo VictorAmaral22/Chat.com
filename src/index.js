@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 
-// ATENÇÃO
 const http = require('http');
 const server = http.createServer(app);
 
@@ -9,54 +8,12 @@ const server = http.createServer(app);
 const {
     Server
 } = require("socket.io");
+
+const { SocketConnection } = require('./socket');
+
 const io = new Server(server);
-var usersTyping = [];
 
-let users= []
-io.on('connection', (socket) => {
-    console.log('a user connected');
-    socket.client.nick = 'Unknown'+Math.floor(Math.random() * 100);
-    users.push(socket.client.nick);
-    io.emit('users', users);
-    io.emit('chat message', socket.client.nick + ' entrou no sala de chat ');
-    socket.on('disconnect', () => {
-        console.log('user disconnected');
-        users = users.filter(i=>i !== socket.client.nick);
-        usersTyping = usersTyping.filter(item => item.id != socket.client.id);
-        io.emit('chat message', socket.client.nick + ' deixou sala de chat ');
-    });
-
-    socket.on('user typing', () => {
-        if(!usersTyping.find(item => item.id == socket.client.id)){
-            console.log('socket.client.nick ',socket.client.nick)
-            usersTyping.push({ id: socket.client.id, nick: socket.client.nick});
-            console.log('usersTyping ',usersTyping)
-            // let typersExceptU = usersTyping.filter(item => item.id != socket.client.id)
-            io.emit('users typing list', usersTyping);
-        }
-    });
-
-    socket.on('user stopped typing', () => {
-        console.log(socket.client.id + ' parou de digitar');
-        usersTyping = usersTyping.filter(item => item.id != socket.client.id);
-        console.log('usersTyping ',usersTyping)
-        // let typersExceptU = usersTyping.filter(item => item.id != socket.client.id)
-        io.emit('users typing list', usersTyping);
-    });
-
-    socket.on('chat message', (msg) => {
-        console.log(socket.client.id + ': ' + msg);
-        usersTyping = usersTyping.filter(item => item.id != socket.client.id);
-        io.emit('chat message', socket.client.nick + ': ' + msg);
-        io.emit('users typing list', usersTyping);
-    });
-
-    socket.on('set nick', (msg) => {
-        const oldNick = socket.client.nick;
-        io.emit('chat message', `${oldNick} trocou seu nome para ${msg}`);
-        socket.client.nick = msg;
-    });
-});
+SocketConnection(io);
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + "/index.html");
